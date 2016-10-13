@@ -796,7 +796,6 @@ static const struct freq_tbl ftbl_gcc_sdcc1_apps_clk[] = {
 	{ }
 };
 
-
 static struct clk_cdiv_rcg2  sdcc1_apps_clk_src = {
 	.cmd_rcgr = SDCC1_APPS_CMD_RCGR,
 	.hid_width = 5,
@@ -845,7 +844,11 @@ static struct clk_cdiv_rcg2 apps_clk_src = {
 		.name = "apps_clk_src",
 		.parent_names = gcc_xo_ddr_500_200,
 		.num_parents = 4,
+#ifdef CONFIG_HLABS
+		.ops = &clk_rcg2_ops,
+#else
 		.ops = &clk_cpu_rcg2_ops,
+#endif
 	},
 };
 

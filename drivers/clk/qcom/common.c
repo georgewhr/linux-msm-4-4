@@ -167,5 +167,13 @@ int qcom_cc_probe(struct platform_device *pdev, const struct qcom_cc_desc *desc)
 	return qcom_cc_really_probe(pdev, desc, regmap);
 }
 EXPORT_SYMBOL_GPL(qcom_cc_probe);
+#if defined (CONFIG_HLABS)
+void qcom_cc_remove(struct platform_device *pdev)
+{
+	of_clk_del_provider(pdev->dev.of_node);
+	reset_controller_unregister(platform_get_drvdata(pdev));
+}
+EXPORT_SYMBOL_GPL(qcom_cc_remove);
+#endif
 
 MODULE_LICENSE("GPL v2");

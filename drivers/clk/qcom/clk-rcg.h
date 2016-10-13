@@ -17,6 +17,10 @@
 #include <linux/clk-provider.h>
 #include "clk-regmap.h"
 
+#if defined (CONFIG_HLABS)
+#define CLK_RCG2_NO_WAIT	BIT(8)
+#endif
+
 struct freq_tbl {
 	unsigned long freq;
 	u8 src;
@@ -66,6 +70,20 @@ struct pre_div {
 	u8		pre_div_shift;
 	u8		pre_div_width;
 };
+
+#if defined (CONFIG_HLABS)
+/**
+ * struct c_div - custom-divider used with Different Offsets
+ * @c_div_offset: offset of the CDIV in the ADDRESS Space
+ * @c_div_shift: lowest bit of pre divider field
+ * @c_div_width: number of bits in pre divider
+ */
+struct c_div {
+	u32	offset;
+	u8	shift;
+	u32	mask;
+};
+#endif
 
 /**
  * struct src_sel - source selector
@@ -172,11 +190,40 @@ struct clk_rcg2 {
 
 #define to_clk_rcg2(_hw) container_of(to_clk_regmap(_hw), struct clk_rcg2, clkr)
 
+#if defined (CONFIG_HLABS)
+/**
+ * struct clk_cdiv_rcg2 - cdiv with root clock generator
+ *
+ * @cmd_rcgr: corresponds to *_CMD_RCGR
+ * @mnd_width: number of bits in m/n/d values
+ * @hid_width: number of bits in half integer divider
+ * @parent_map: map from software's parent index to hardware's src_sel field
+ * @freq_tbl: frequency table
+ * @clkr: regmap clock handle
+ * @lock: register lock
+ *
+ */
+struct clk_cdiv_rcg2 {
+	u32		cmd_rcgr;
+	u8		mnd_width;
+	u8		hid_width;
+	struct c_div	cdiv;
+	const u8	*parent_map;
+	const struct freq_tbl	*freq_tbl;
+	struct clk_regmap	clkr;
+};
+
+#define to_clk_cdiv_rcg2(_hw) container_of(to_clk_regmap(_hw), \
+						struct clk_cdiv_rcg2, clkr)
+#endif
 extern const struct clk_ops clk_rcg2_ops;
 extern const struct clk_ops clk_rcg2_shared_ops;
 extern const struct clk_ops clk_edp_pixel_ops;
 extern const struct clk_ops clk_byte_ops;
 extern const struct clk_ops clk_byte2_ops;
+#if defined (CONFIG_HLABS)
+extern const struct clk_ops clk_cdiv_rcg2_ops;
+#endif
 extern const struct clk_ops clk_pixel_ops;
 
 #endif
